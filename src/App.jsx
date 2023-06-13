@@ -7,11 +7,17 @@ import Rank from "./components/Rank/Rank";
 import ParticlesBg from "particles-bg";
 import "./App.css";
 
+const PAT = "645b039b4882440f916800b3f6e48397";
+const USER_ID = "mzclarifai";
+const APP_ID = "my-first-application";
+const MODEL_ID = "face-detection";
+
 export class App extends React.Component {
   constructor() {
     super();
     this.state = {
       input: "",
+      imgURL: "",
     };
   }
 
@@ -20,21 +26,7 @@ export class App extends React.Component {
   };
 
   onButtonSubmit = () => {
-    console.log(this.state.input);
-    // Your PAT (Personal Access Token) can be found in the portal under Authentification
-    const PAT = "645b039b4882440f916800b3f6e48397";
-    // Specify the correct user_id/app_id pairings
-    // Since you're making inferences outside your app's scope
-    const USER_ID = "mzclarifai";
-    const APP_ID = "my-first-application";
-    // Change these to whatever model and image URL you want to use
-    const MODEL_ID = "general-image-recognition";
-    const MODEL_VERSION_ID = "aa7f35c01e0642fda5cf400f543e7c40";
-    const IMAGE_URL = "https://samples.clarifai.com/metro-north.jpg";
-
-    ///////////////////////////////////////////////////////////////////////////////////
-    // YOU DO NOT NEED TO CHANGE ANYTHING BELOW THIS LINE TO RUN THIS EXAMPLE
-    ///////////////////////////////////////////////////////////////////////////////////
+    this.setState({ imgURL: this.state.input });
 
     const raw = JSON.stringify({
       user_app_id: {
@@ -45,7 +37,7 @@ export class App extends React.Component {
         {
           data: {
             image: {
-              url: IMAGE_URL,
+              url: this.state.input,
             },
           },
         },
@@ -61,16 +53,8 @@ export class App extends React.Component {
       body: raw,
     };
 
-    // NOTE: MODEL_VERSION_ID is optional, you can also call prediction with the MODEL_ID only
-    // https://api.clarifai.com/v2/models/{YOUR_MODEL_ID}/outputs
-    // this will default to the latest version_id
-
     fetch(
-      "https://api.clarifai.com/v2/models/" +
-        MODEL_ID +
-        "/versions/" +
-        MODEL_VERSION_ID +
-        "/outputs",
+      "https://api.clarifai.com/v2/models/" + MODEL_ID + "/outputs",
       requestOptions
     )
       .then((response) => response.json())
@@ -89,7 +73,7 @@ export class App extends React.Component {
           onInputChange={this.onInputChange}
           onButtonSubmit={this.onButtonSubmit}
         />
-        <FaceRecognition />
+        <FaceRecognition imgURL={this.state.imgURL} />
       </div>
     );
   }
