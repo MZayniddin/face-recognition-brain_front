@@ -18,12 +18,30 @@ export class App extends React.Component {
     this.state = {
       input: "",
       imgURL: "",
+      box: {},
     };
   }
 
-  onInputChange = (e) => {
-    this.setState({ input: e.target.value });
+  calculateFaceLocation = (data) => {
+    const clarifaiFace =
+      data.outputs[0]?.data?.regions[0]?.region_info?.bounding_box;
+
+    const image = document.getElementById("inputimage");
+    const width = +image.width;
+    const height = +image.height;
+    console.log(clarifaiFace);
+
+    return {
+      leftCol: clarifaiFace.left_col * width,
+      topRow: clarifaiFace.top_row * height,
+      rightCol: width - clarifaiFace.right_col * width,
+      bottomRow: height - clarifaiFace.bottom_row * height,
+    };
   };
+
+  displayFaceBox = (box) => this.setState({ box });
+
+  onInputChange = (e) => this.setState({ input: e.target.value });
 
   onButtonSubmit = () => {
     this.setState({ imgURL: this.state.input });
@@ -58,7 +76,7 @@ export class App extends React.Component {
       requestOptions
     )
       .then((response) => response.json())
-      .then((result) => console.log(result))
+      .then((result) => this.displayFaceBox(this.calculateFaceLocation(result)))
       .catch((error) => console.log("error", error));
   };
 
@@ -73,7 +91,7 @@ export class App extends React.Component {
           onInputChange={this.onInputChange}
           onButtonSubmit={this.onButtonSubmit}
         />
-        <FaceRecognition imgURL={this.state.imgURL} />
+        <FaceRecognition box={this.state.box} imgURL={this.state.imgURL} />
       </div>
     );
   }
