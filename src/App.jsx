@@ -14,17 +14,38 @@ const USER_ID = "mzclarifai";
 const APP_ID = "my-first-application";
 const MODEL_ID = "face-detection";
 
+const initialState = {
+  input: "",
+  imageUrl: "",
+  box: {},
+  route: "signin",
+  isSignedIn: false,
+  user: {
+    id: "",
+    name: "",
+    email: "",
+    entries: 0,
+    joined: "",
+  },
+};
+
 export class App extends React.Component {
   constructor() {
     super();
-    this.state = {
-      input: "",
-      imgURL: "",
-      box: {},
-      route: "signin",
-      isSignedIn: false,
-    };
+    this.state = initialState;
   }
+
+  loadUser = (data) => {
+    this.setState({
+      user: {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        entries: data.entries,
+        joined: data.joined,
+      },
+    });
+  };
 
   calculateFaceLocation = (data) => {
     const clarifaiFace =
@@ -46,48 +67,25 @@ export class App extends React.Component {
 
   onInputChange = (e) => this.setState({ input: e.target.value });
 
-  getClarifaiRequestOptions = (imgURL) => {
-    const raw = JSON.stringify({
-      user_app_id: {
-        user_id: USER_ID,
-        app_id: APP_ID,
-      },
-      inputs: [
-        {
-          data: {
-            image: {
-              url: imgURL,
-            },
-          },
-        },
-      ],
-    });
-    return {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        Authorization: "Key " + PAT,
-      },
-      body: raw,
-    };
-  };
-
   onButtonSubmit = () => {
     this.setState({ imgURL: this.state.input });
 
-    const requestOptions = this.getClarifaiRequestOptions(this.state.input);
-
-    fetch(
-      "https://api.clarifai.com/v2/models/" + MODEL_ID + "/outputs",
-      requestOptions
-    )
+    fetch("http://localhost:3000/imageurl", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        input: this.state.input,
+      }),
+    })
       .then((response) => response.json())
-      .then((result) => this.displayFaceBox(this.calculateFaceLocation(result)))
+      .then((count) =>
+        this.setState(Object.assign(this.state.user, { entries: count }))
+      )
       .catch((error) => console.log("error", error));
   };
 
   onRouteChange = (route) => {
-    if (route === "signout") this.setState({ isSignedIn: false });
+    if (route === "signout") this.setState(initialState);
     else if (route === "home") this.setState({ isSignedIn: true });
     this.setState({ route });
   };
@@ -104,7 +102,10 @@ export class App extends React.Component {
         {route === "home" ? (
           <>
             <Logo />
-            <Rank />
+            <Rank
+              name={this.state.user.name}
+              entries={this.state.user.entries}
+            />
             <ImageLinkForm
               onInputChange={this.onInputChange}
               onButtonSubmit={this.onButtonSubmit}
@@ -112,9 +113,9 @@ export class App extends React.Component {
             <FaceRecognition box={box} imgURL={imgURL} />{" "}
           </>
         ) : route === "signin" ? (
-          <SignIn onRouteChange={this.onRouteChange} />
+          <SignIn loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
         ) : (
-          <Register />
+          <Register loadUser={this.loadUser} />
         )}
       </div>
     );
