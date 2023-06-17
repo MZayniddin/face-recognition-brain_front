@@ -1,3 +1,5 @@
+import React from "react";
+
 class Register extends React.Component {
   constructor(props) {
     super(props);
@@ -36,7 +38,8 @@ class Register extends React.Component {
           this.props.loadUser(user);
           this.props.onRouteChange("home");
         }
-      });
+      })
+      .catch((err) => console.log(err));
   };
 
   render() {
