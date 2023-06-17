@@ -9,11 +9,6 @@ import Register from "./components/Register/Register";
 import ParticlesBg from "particles-bg";
 import "./App.css";
 
-const PAT = "645b039b4882440f916800b3f6e48397";
-const USER_ID = "mzclarifai";
-const APP_ID = "my-first-application";
-const MODEL_ID = "face-detection";
-
 const initialState = {
   input: "",
   imageUrl: "",
